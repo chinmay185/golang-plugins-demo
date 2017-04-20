@@ -1,0 +1,3 @@
+package: go-plugins-demo
+import:
+- package: github.com/tcard/pluginunmarshal
