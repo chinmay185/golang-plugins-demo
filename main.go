@@ -8,12 +8,13 @@ import (
 	"strings"
 	"github.com/gorilla/mux"
 	"net/http"
+	"encoding/json"
 )
 
 type MetricPlugin interface {
 	Name() string
 	Desc() string
-	Exec() (map[string]string)
+	Exec() (map[string]interface{})
 }
 
 const PluginDir = "plugins"
@@ -22,15 +23,15 @@ const PluginExtension = ".so"
 func PluginsReloadHandler(w http.ResponseWriter, r *http.Request) {
 	executePlugins(findPlugins())
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Reloaded all plugins\n")
+	fmt.Fprintf(w, "reloaded all plugins\n")
 }
 
 func main() {
+	executePlugins(findPlugins())
+
 	r := mux.NewRouter()
 	r.HandleFunc("/plugins/reload", PluginsReloadHandler).Methods("PUT")
 	http.ListenAndServe(":8000", r)
-
-	executePlugins(findPlugins())
 }
 
 func executePlugins(plugins [][]string) {
@@ -54,7 +55,6 @@ func findPlugins() [][]string {
 }
 
 func runPlugin(pluginPath, pluginName string) {
-	fmt.Printf("running plugin %s\n", pluginName)
 	p, err := plugin.Open(pluginPath)
 	if err != nil {
 		fmt.Errorf("cannot open plugin %s\n", pluginPath)
@@ -67,7 +67,14 @@ func runPlugin(pluginPath, pluginName string) {
 
 	m := cpu.(MetricPlugin)
 
-	fmt.Printf("starting plugin name: %s\n", m.Name())
+	fmt.Printf("plugin: %s\n", m.Name())
 	fmt.Printf("short desc: %s\n", m.Desc())
-	fmt.Printf("m values: %+v\n", m.Exec())
+	output := m.Exec()
+	mo := output["info"]
+
+	jsonOut, err := json.MarshalIndent(mo, "", "  ")
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	fmt.Println("output:", string(jsonOut))
 }

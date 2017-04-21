@@ -1,23 +1,24 @@
 package main
 
-type CPU struct {
+import (
+	"github.com/shirou/gopsutil/cpu"
+)
+
+type CPUMetric struct {
 }
 
-var Cpu CPU
+var Cpu CPUMetric
 
-func (*CPU) Name() string {
-	return "CPU Metric"
+func (*CPUMetric) Name() string {
+	return "CPU metric"
 }
-func (*CPU) Desc() string {
+func (*CPUMetric) Desc() string {
 	return "Detailed CPU metrics"
 }
-func (*CPU) Exec() (map[string]string) {
-	cpuMetrics := map[string]string{
-		"processor":  "0",
-		"vendor_id":  "GenuineIntel",
-		"cpu family": "6",
-		"model":      "70",
-		"model name": "Intel(R) Core(TM) i7-4850HQ CPU @ 2.30GHz",
+func (*CPUMetric) Exec() (map[string]interface{}) {
+	info, _ := cpu.Info()
+	cpuMetrics := map[string]interface{}{
+		"info": info,
 	}
 	return cpuMetrics
 }

@@ -1,21 +1,22 @@
 package main
 
-type DiskInterface struct {
+import "github.com/shirou/gopsutil/disk"
+
+type DiskMetric struct {
 }
 
-var Disk DiskInterface
+var Disk DiskMetric
 
-func (*DiskInterface) Name() string {
-	return "Disk Metric"
+func (*DiskMetric) Name() string {
+	return "updated Disk metric"
 }
-func (*DiskInterface) Desc() string {
-	return "Detailed disk usage metrics"
+func (*DiskMetric) Desc() string {
+	return "updated detailed disk metrics"
 }
-func (*DiskInterface) Exec() (map[string]string) {
-	cpuMetrics := map[string]string{
-		"disk":      "1",
-		"vendor_id": "Sandisk",
-		"capacity":  "500Gb",
+func (*DiskMetric) Exec() (map[string]interface{}) {
+	partitions, _ := disk.Partitions(false)
+	diskMetrics := map[string]interface{}{
+		"info": partitions,
 	}
-	return cpuMetrics
+	return diskMetrics
 }
