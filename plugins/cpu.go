@@ -5,10 +5,6 @@ type CPU struct {
 
 var Cpu CPU
 
-func Add(a, b int) int {
-	return a + b
-}
-
 func (*CPU) Name() string {
 	return "CPU Metric"
 }

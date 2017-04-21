@@ -2,8 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/tcard/pluginunmarshal"
 	"plugin"
+	"path/filepath"
+	"io/ioutil"
+	"strings"
+	"github.com/gorilla/mux"
+	"net/http"
 )
 
 type MetricPlugin interface {
@@ -12,51 +16,50 @@ type MetricPlugin interface {
 	Exec() (map[string]string)
 }
 
+const PluginDir = "plugins"
+const PluginExtension = ".so"
+
+func PluginsReloadHandler(w http.ResponseWriter, r *http.Request) {
+	executePlugins(findPlugins())
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "Reloaded all plugins\n")
+}
+
 func main() {
-	pluginName := "plugins/cpu.so"
+	r := mux.NewRouter()
+	r.HandleFunc("/plugins/reload", PluginsReloadHandler).Methods("PUT")
+	http.ListenAndServe(":8000", r)
 
-	//WithRawPluginApiCallAFunction(pluginName)
-	//WithPluginMarshalCallAFunction(pluginName)
-
-	WithRawPluginApiCallAStruct(pluginName)
+	executePlugins(findPlugins())
 }
 
-func WithRawPluginApiCallAFunction(pluginName string) {
-	fmt.Println("WithRawPluginApiCallAFunction")
-	p, err := plugin.Open(pluginName)
-	if err != nil {
-		fmt.Errorf("cannot open plugin %s\n", pluginName)
+func executePlugins(plugins [][]string) {
+	fmt.Printf("plugins: %+v\n", plugins)
+	for _, ps := range plugins {
+		runPlugin(ps[0], ps[1])
 	}
-	methodName := "Add"
-	add, err := p.Lookup(methodName)
-	if err != nil {
-		fmt.Errorf("cannot lookup method %s\n", methodName)
-	}
-	sum := add.(func(int, int) int)(1, 2)
-	fmt.Printf("Sum from plugin is %d\n", sum)
 }
 
-func WithPluginMarshalCallAFunction(pluginName string) {
-	fmt.Println("WithPluginMarshalCallAFunction")
-	var p struct {
-		Add func(a, b int) int
+func findPlugins() [][]string {
+	allFiles, _ := ioutil.ReadDir(PluginDir)
+	plugins := make([][]string, 0, len(allFiles))
+	for _, f := range allFiles {
+		if !f.IsDir() && strings.HasSuffix(f.Name(), PluginExtension) {
+			pluginPath := filepath.Join(PluginDir, f.Name())
+			symbolName := f.Name()[0:(len(f.Name()) - len(PluginExtension))]
+			plugins = append(plugins, []string{pluginPath, symbolName})
+		}
 	}
-
-	err := pluginunmarshal.Open(pluginName, &p)
-	if err != nil {
-		fmt.Errorf("could not open %s: %v", pluginName, err)
-	}
-
-	fmt.Printf("Sum from plugin is %d\n", p.Add(1, 2))
+	return plugins
 }
 
-func WithRawPluginApiCallAStruct(pluginName string) {
-	fmt.Println("WithRawPluginApiCallAStruct")
-	p, err := plugin.Open(pluginName)
+func runPlugin(pluginPath, pluginName string) {
+	fmt.Printf("running plugin %s\n", pluginName)
+	p, err := plugin.Open(pluginPath)
 	if err != nil {
-		fmt.Errorf("cannot open plugin %s\n", pluginName)
+		fmt.Errorf("cannot open plugin %s\n", pluginPath)
 	}
-	symName := "Cpu"
+	symName := strings.Title(pluginName)
 	cpu, err := p.Lookup(symName)
 	if err != nil {
 		fmt.Errorf("cannot lookup %s\n", symName)
