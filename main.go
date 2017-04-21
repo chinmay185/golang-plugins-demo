@@ -21,9 +21,10 @@ const PluginDir = "plugins"
 const PluginExtension = ".so"
 
 func PluginsReloadHandler(w http.ResponseWriter, r *http.Request) {
-	executePlugins(findPlugins())
+	plugins := findPlugins()
+	executePlugins(plugins)
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "reloaded all plugins\n")
+	fmt.Fprintf(w, "reloaded %v\n", plugins)
 }
 
 func main() {

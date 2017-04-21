@@ -4,18 +4,19 @@ import (
 	"github.com/shirou/gopsutil/cpu"
 )
 
-type CPUMetric struct {
+type cpuMetric struct {
 }
 
-var Cpu CPUMetric
+// exported variable to be used from main program
+var Cpu cpuMetric
 
-func (*CPUMetric) Name() string {
+func (*cpuMetric) Name() string {
 	return "CPU metric"
 }
-func (*CPUMetric) Desc() string {
+func (*cpuMetric) Desc() string {
 	return "Detailed CPU metrics"
 }
-func (*CPUMetric) Exec() (map[string]interface{}) {
+func (*cpuMetric) Exec() (map[string]interface{}) {
 	info, _ := cpu.Info()
 	cpuMetrics := map[string]interface{}{
 		"info": info,

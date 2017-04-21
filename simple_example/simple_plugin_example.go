@@ -7,7 +7,6 @@ import (
 )
 
 func main() {
-
 	pluginName := "simple_plugin.so"
 
 	WithRawPluginApiCallAFunction(pluginName)

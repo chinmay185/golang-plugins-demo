@@ -2,18 +2,19 @@ package main
 
 import "github.com/shirou/gopsutil/disk"
 
-type DiskMetric struct {
+type diskMetric struct {
 }
 
-var Disk DiskMetric
+// exported variable to be used from main program
+var Disk diskMetric
 
-func (*DiskMetric) Name() string {
+func (*diskMetric) Name() string {
 	return "Disk metric"
 }
-func (*DiskMetric) Desc() string {
+func (*diskMetric) Desc() string {
 	return "Detailed disk metrics"
 }
-func (*DiskMetric) Exec() (map[string]interface{}) {
+func (*diskMetric) Exec() (map[string]interface{}) {
 	partitions, _ := disk.Partitions(false)
 	diskMetrics := map[string]interface{}{
 		"info": partitions,
