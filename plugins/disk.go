@@ -8,10 +8,10 @@ type DiskMetric struct {
 var Disk DiskMetric
 
 func (*DiskMetric) Name() string {
-	return "updated Disk metric"
+	return "Disk metric"
 }
 func (*DiskMetric) Desc() string {
-	return "updated detailed disk metrics"
+	return "Detailed disk metrics"
 }
 func (*DiskMetric) Exec() (map[string]interface{}) {
 	partitions, _ := disk.Partitions(false)
