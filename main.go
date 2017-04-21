@@ -20,26 +20,27 @@ type MetricPlugin interface {
 const PluginDir = "plugins"
 const PluginExtension = ".so"
 
-func PluginsReloadHandler(w http.ResponseWriter, r *http.Request) {
-	plugins := findPlugins()
-	executePlugins(plugins)
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "reloaded %v\n", plugins)
-}
-
 func main() {
-	executePlugins(findPlugins())
+	fmt.Println("Running existing plugins from `plugins` directory")
 
+	findAndExecPlugins()
+
+	fmt.Println("Add new plugins in `plugins` directory that satisfy MetricPlugin interface and `curl -X PUT http://localhost:8000/plugins/reload` to reload the plugins")
 	r := mux.NewRouter()
 	r.HandleFunc("/plugins/reload", PluginsReloadHandler).Methods("PUT")
 	http.ListenAndServe(":8000", r)
 }
 
-func executePlugins(plugins [][]string) {
-	fmt.Printf("plugins: %+v\n", plugins)
-	for _, ps := range plugins {
-		runPlugin(ps[0], ps[1])
-	}
+func PluginsReloadHandler(w http.ResponseWriter, r *http.Request) {
+	plugins := findAndExecPlugins()
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "reloaded %v\n", plugins)
+}
+
+func findAndExecPlugins() [][]string {
+	plugins := findPlugins()
+	executePlugins(plugins)
+	return plugins
 }
 
 func findPlugins() [][]string {
@@ -53,6 +54,13 @@ func findPlugins() [][]string {
 		}
 	}
 	return plugins
+}
+
+func executePlugins(plugins [][]string) {
+	fmt.Printf("plugins: %+v\n", plugins)
+	for _, ps := range plugins {
+		runPlugin(ps[0], ps[1])
+	}
 }
 
 func runPlugin(pluginPath, pluginName string) {
