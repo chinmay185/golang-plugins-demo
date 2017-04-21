@@ -21,7 +21,7 @@ This will execute cpu plugin and display some cpu stats on the console. To displ
 
 ```
 go build -buildmode=plugin -o plugins/disk.so plugins/disk.go
-﻿curl -X PUT http://localhost:8000/plugins/reload
+curl -X PUT http://localhost:8000/plugins/reload
 ```
 You should now be able to see disk stats along with cpu stats.
 
@@ -36,8 +36,8 @@ You should now be able to see disk stats along with cpu stats.
 ## Some Go plugin limitations / gotchas
 - Plugins are only supported on linux (for now)
 - Plugin code needs to be compiled with the same version of Go that was used for compiling the main app (for ex. Go 1.9 plugins won't work on Go 1.8 app)
-- Plugin has to be in the main package.﻿Packages not named main are ignored. For more info, run `go help buildmode`
-- Plugins can't be reloaded (no hot-code swapping) Refer [this issue](https://github.com/golang/go/issues/17980) for more details
+- Plugin has to be in the main package. Packages not named main are ignored. For more info, run `go help buildmode`
+- Plugins can't be reloaded (no hot-code swapping). Refer [this issue](https://github.com/golang/go/issues/17980) for more details
 - Loading a copy of the already loaded plugin panics. Refer [here](https://github.com/golang/go/issues/19004)
 
 ## License
